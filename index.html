@@ -3,72 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>المسلم PRO - الإصدار المطور</title>
-    <link rel="manifest" href="manifest.json">
+    <title>المسلم PRO - الإصدار الكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --accent: #059669; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
         [data-theme="dark"] { --bg: #020617; --card: #0f172a; --text: #f1f5f9; }
-        body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 75px; transition: 0.3s; overflow-x: hidden; }
+        
+        body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 75px; transition: 0.3s; overflow-x: hidden; touch-action: manipulation; }
+        
         header { background: var(--card); padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
         .logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); }
-        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
+        
+        main { padding: 15px; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* الواجهة الرئيسية والعداد */
+        .hero-card { background: var(--card); border-radius: 20px; overflow: hidden; position: relative; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); height: 220px; }
+        #home-random-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); transition: 0.5s; }
+        .hero-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; width: 90%; }
+        #local-time { font-size: 2.8rem; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        #next-prayer-timer { font-size: 1rem; background: rgba(0,0,0,0.4); padding: 6px 15px; border-radius: 20px; display: inline-block; margin-top: 8px; backdrop-filter: blur(5px); }
+
+        .prayer-bar { display: flex; justify-content: space-around; background: var(--card); padding: 12px; border-radius: 18px; margin-bottom: 25px; font-size: 0.8rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .prayer-item { text-align: center; transition: 0.3s; }
+        .prayer-item.active { color: var(--accent); font-weight: 800; transform: scale(1.1); }
+
+        /* الشبكات */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
-        .card { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; border: 1px solid rgba(0,0,0,0.03); }
+        .card { background: var(--card); padding: 15px; border-radius: 15px; cursor: pointer; text-align: center; border: 1px solid rgba(0,0,0,0.03); transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .card:active { transform: scale(0.95); }
+        .reciter-img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--accent); padding: 2px; }
+
+        /* نظام الفيديو (TikTok Style) */
+        .video-container { height: calc(100vh - 150px); overflow-y: scroll; snap-type: y mandatory; border-radius: 20px; background: #000; scrollbar-width: none; }
+        .video-container::-webkit-scrollbar { display: none; }
+        .video-snap { snap-align: start; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        .video-snap video { width: 100%; height: 100%; object-fit: contain; }
+        .video-overlay { position: absolute; bottom: 40px; right: 20px; left: 20px; color: white; text-shadow: 0 2px 5px rgba(0,0,0,1); pointer-events: none; }
+
+        /* المشغل الصوتي المطور */
         .audio-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); visibility: hidden; }
         .audio-modal.active { bottom: 0; visibility: visible; }
-        .player-content { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .player-img { width: 220px; height: 220px; border-radius: 25px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        #install-btn { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; display: none; cursor: pointer; }
-        .prayer-bar { display: flex; justify-content: space-around; background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        .video-container { height: 80vh; overflow-y: scroll; snap-type: y mandatory; background: #000; border-radius: 15px; }
-        .video-snap { snap-align: start; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
-        .video-snap video { width: 100%; height: 100%; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); }
+        .player-content { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; position: relative; }
+        .player-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(25px) brightness(0.4); opacity: 0.5; z-index: -1; }
+        .player-img { width: 260px; height: 260px; border-radius: 30px; object-fit: cover; box-shadow: 0 15px 40px rgba(0,0,0,0.4); margin-bottom: 25px; border: 4px solid rgba(255,255,255,0.1); }
+        #audio-progress { width: 100%; accent-color: var(--accent); height: 6px; cursor: pointer; border-radius: 10px; }
+
+        /* المصحف والأذكار */
+        .quran-view { text-align: right; line-height: 2.8; font-size: 1.5rem; font-family: 'Amiri'; padding: 20px; background: var(--card); border-radius: 15px; }
+        .ayah { cursor: pointer; transition: 0.2s; padding: 2px 5px; border-radius: 5px; display: inline; }
+        .ayah:hover { background: rgba(5, 150, 105, 0.15); color: var(--accent); }
+        .dhikr-card { background: var(--card); padding: 20px; border-radius: 18px; margin-bottom: 15px; text-align: right; border-right: 6px solid var(--accent); box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .dhikr-count { display: inline-block; background: var(--accent); color: white; padding: 4px 15px; border-radius: 12px; font-size: 0.9rem; margin-top: 10px; }
+
+        /* التنقل السفلي */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.08); z-index: 1000; }
+        .nav-link { border: none; background: none; color: #94a3b8; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; gap: 5px; transition: 0.3s; }
+        .nav-link.active { color: var(--accent); font-weight: bold; transform: translateY(-3px); }
+        .nav-link i { font-size: 1.4rem; }
+
+        .tab-btn { background: var(--card); border: 1.5px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 25px; cursor: pointer; font-family: inherit; font-weight: bold; }
+        .tab-btn.active { background: var(--accent); color: white; }
+
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:6000; padding: 20px; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body data-theme="light">
 
     <header>
-        <button id="back-nav" onclick="App.goBack()" style="display:none; background:none; border:none; font-size:1.2rem; color:var(--text);"><i class="fas fa-arrow-right"></i></button>
+        <button id="back-nav" class="tab-btn" onclick="App.goBack()" style="display:none; border:none;"><i class="fas fa-arrow-right"></i></button>
         <div class="logo">المسلم PRO</div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button id="install-btn" onclick="App.installApp()">تثبيت</button>
-            <button onclick="App.toggleTheme()" style="background:none; border:none; font-size:1.2rem; color:var(--text);"><i id="theme-icon" class="fas fa-moon"></i></button>
-        </div>
+        <button onclick="App.toggleTheme()" class="tab-btn" style="border:none;"><i id="theme-icon" class="fas fa-moon"></i></button>
     </header>
 
     <main>
         <section id="p-home" class="page active-page">
-            <div id="prayer-bar" class="prayer-bar">
-                <div id="pt-Fajr">الفجر <span>--:--</span></div>
-                <div id="pt-Maghrib">المغرب <span>--:--</span></div>
-                <div id="pt-Isha">العشاء <span>--:--</span></div>
+            <div class="hero-card">
+                <img id="home-random-img" src="">
+                <div class="hero-content">
+                    <div id="local-time">00:00:00</div>
+                    <div id="next-prayer-timer">جاري المزامنة...</div>
+                </div>
             </div>
-            <h3>القراء</h3>
-            <div id="reciters-grid" class="grid"></div>
-            <h3 style="margin-top:20px;">الإذاعات</h3>
-            <div id="radio-grid" class="grid"></div>
-        </section>
 
-        <section id="p-quran" class="page">
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button onclick="App.switchQuran('text')" class="tab-btn">نصي</button>
-                <button onclick="App.switchQuran('image')" class="tab-btn">مصور</button>
+            <div id="prayer-bar" class="prayer-bar">
+                <div class="prayer-item" id="pt-Fajr"><span>الفجر</span><div class="time">--:--</div></div>
+                <div class="prayer-item" id="pt-Dhuhr"><span>الظهر</span><div class="time">--:--</div></div>
+                <div class="prayer-item" id="pt-Asr"><span>العصر</span><div class="time">--:--</div></div>
+                <div class="prayer-item" id="pt-Maghrib"><span>المغرب</span><div class="time">--:--</div></div>
+                <div class="prayer-item" id="pt-Isha"><span>العشاء</span><div class="time">--:--</div></div>
             </div>
-            <div id="surah-grid" class="grid"></div>
+
+            <h3 style="border-right: 4px solid var(--accent); padding-right: 10px;">أشهر القراء</h3>
+            <div id="reciters-grid" class="grid"></div>
+
+            <h3 style="margin-top:30px; border-right: 4px solid var(--accent); padding-right: 10px;">إذاعات القرآن مباشر</h3>
+            <div id="radio-grid" class="grid"></div>
         </section>
 
         <section id="p-video" class="page">
             <div id="tiktok-container" class="video-container"></div>
         </section>
 
+        <section id="p-quran" class="page">
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button id="q-txt-btn" class="tab-btn active" onclick="App.switchQuran('text')">مصحف نصي</button>
+                <button id="q-img-btn" class="tab-btn" onclick="App.switchQuran('image')">مصحف مصور</button>
+            </div>
+            <div id="surah-grid" class="grid"></div>
+        </section>
+
         <section id="p-azkar" class="page">
             <div id="azkar-categories" class="grid"></div>
-            <div id="azkar-content"></div>
+            <div id="azkar-content" style="margin-top:15px;"></div>
         </section>
 
         <section id="p-viewer" class="page">
@@ -78,33 +128,44 @@
 
     <div id="audio-player-modal" class="audio-modal">
         <div class="player-content">
-            <button onclick="App.closeAudioPlayer()" style="position:absolute; top:20px; left:20px; background:none; border:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
+            <button onclick="App.closeAudioPlayer()" style="position:absolute; top:30px; right:30px; background:none; border:none; font-size:1.8rem; color:var(--text);"><i class="fas fa-chevron-down"></i></button>
+            <div id="player-bg" class="player-bg"></div>
             <img id="player-img" src="" class="player-img">
-            <h2 id="player-surah" style="margin:15px 0 5px 0;"></h2>
-            <p id="player-sheikh" style="opacity:0.7; margin-bottom:20px;"></p>
+            <h2 id="player-surah" style="font-family:'Amiri'; color:var(--accent); margin:10px 0; font-size: 2rem;"></h2>
+            <p id="player-sheikh" style="font-size: 1.2rem; opacity: 0.9;"></p>
             
-            <input type="range" id="audio-progress" value="0">
-            <div style="display:flex; justify-content:space-between; width:100%; font-size:0.8rem; margin-top:5px;">
-                <span id="current-time">00:00</span>
-                <span id="duration-time">00:00</span>
-            </div>
-
-            <div style="display:flex; gap:30px; align-items:center; margin-top:30px;">
-                <button onclick="App.prevTrack()" style="background:none; border:none; font-size:1.5rem; color:var(--text);"><i class="fas fa-step-forward"></i></button>
-                <button id="play-pause-btn" onclick="App.toggleAudio()" style="width:70px; height:70px; border-radius:50%; background:var(--accent); color:white; border:none; font-size:1.5rem;"><i class="fas fa-play"></i></button>
-                <button onclick="App.nextTrack()" style="background:none; border:none; font-size:1.5rem; color:var(--text);"><i class="fas fa-step-backward"></i></button>
+            <div style="width:100%; max-width:450px; margin-top:30px;">
+                <input type="range" id="audio-progress" value="0">
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-top:8px; font-family: monospace;">
+                    <span id="current-time">00:00</span>
+                    <span id="duration-time">00:00</span>
+                </div>
+                <div style="display:flex; justify-content:center; gap:40px; margin-top:40px; align-items:center;">
+                    <button onclick="App.audio.currentTime-=10" style="background:none; border:none; font-size:1.8rem; color:var(--text);"><i class="fas fa-undo"></i></button>
+                    <button id="play-pause-btn" onclick="App.toggleAudio()" style="width:80px; height:80px; border-radius:50%; background:var(--accent); color:white; border:none; font-size:2rem; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);"><i class="fas fa-play"></i></button>
+                    <button onclick="App.audio.currentTime+=10" style="background:none; border:none; font-size:1.8rem; color:var(--text);"><i class="fas fa-redo"></i></button>
+                </div>
             </div>
         </div>
     </div>
 
-    <nav class="bottom-nav" style="position:fixed; bottom:0; width:100%; background:var(--card); display:flex; justify-content:space-around; padding:15px 0; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">
-        <button onclick="App.nav('p-home')" class="nav-link"><i class="fas fa-home"></i></button>
-        <button onclick="App.nav('p-quran')" class="nav-link"><i class="fas fa-book"></i></button>
-        <button onclick="App.nav('p-video')" class="nav-link"><i class="fas fa-play-circle"></i></button>
-        <button onclick="App.nav('p-azkar')" class="nav-link"><i class="fas fa-heart"></i></button>
+    <div id="modal" class="modal" onclick="App.closeTafsir()">
+        <div style="background:var(--card); padding:30px; border-radius:20px; width:100%; max-width:550px; max-height:80vh; overflow-y:auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+            <h3 id="m-title" style="color:var(--accent); text-align:center; font-family:'Amiri'; font-size: 1.6rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px;"></h3>
+            <div id="m-body" style="line-height:2; text-align:right; font-size: 1.1rem; padding-top: 15px;"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-link active" onclick="App.nav('p-home', this)"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+        <button class="nav-link" onclick="App.nav('p-quran', this)"><i class="fas fa-book-open"></i><span>المصحف</span></button>
+        <button class="nav-link" onclick="App.nav('p-video', this)"><i class="fas fa-play-circle"></i><span>مرئيات</span></button>
+        <button class="nav-link" onclick="App.nav('p-azkar', this)"><i class="fas fa-heart"></i><span>الأذكار</span></button>
     </nav>
 
     <audio id="audio-player"></audio>
+    <audio id="adan-player" src="https://www.islamcan.com/common/adhan/adhan1.mp3"></audio>
+
     <script src="app.js"></script>
 </body>
 </html>
