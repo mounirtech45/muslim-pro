@@ -1,15 +1,9 @@
 {
   "name": "المسلم PRO",
   "short_name": "المسلم",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#059669",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2913/2913501.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [{ "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
 }
