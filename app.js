@@ -1,136 +1,46 @@
 const App = {
     surahs: ["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"],
-    currentTrack: { index: 0, srv: '', sheikh: '', img: '' },
-    deferredPrompt: null,
+    history: ['p-home'],
+    qMode: 'text',
+    allReciters: [],
+    dhikrData: [],
+    prayerTimes: null,
     audio: document.getElementById('audio-player'),
+    adan: document.getElementById('adan-player'),
 
     async init() {
-        // تسجيل الـ Service Worker للتثبيت
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            this.deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'block';
-        });
-
-        // تحميل البيانات
+        // تهيئة السجل للرجوع
+        window.history.replaceState({page: 'p-home'}, '', '');
+        
+        this.updateTime();
         await this.loadReciters();
         await this.loadRadios();
         await this.loadDhikr();
         await this.loadTikTokVideos();
         this.getPrayerTimes();
         this.renderSurahList();
+        this.setHomeImage();
 
-        // تحديث المشغل
+        // مستمع لزر الرجوع الفعلي للهاتف
+        window.onpopstate = (e) => {
+            if (document.getElementById('audio-player-modal').classList.contains('active')) {
+                this.closeAudioPlayer();
+                return;
+            }
+            if (document.getElementById('modal').style.display === 'flex') {
+                this.closeTafsir();
+                return;
+            }
+            if (e.state && e.state.page) {
+                this.renderPage(e.state.page, false);
+            }
+        };
+
         this.audio.ontimeupdate = () => this.updateAudioUI();
-        this.audio.onended = () => this.nextTrack();
-        
         document.getElementById('audio-progress').oninput = (e) => {
             if(this.audio.duration) this.audio.currentTime = (e.target.value * this.audio.duration) / 100;
         };
     },
-
-    // جلب القراء مع إصلاح عرض الصور
-    async loadReciters() {
-        const res = await fetch('reciters.json');
-        const data = await res.json();
-        document.getElementById('reciters-grid').innerHTML = data.reciters.map(r => `
-            <div class="card" onclick="App.openSheikh('${r.server}', '${r.name}', '${r.img}')">
-                <img src="${r.img}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
-                <p style="font-size:0.8rem;">${r.name}</p>
-            </div>`).join('');
-    },
-
-    // فتح قائمة السور للقارئ
-    openSheikh(srv, name, img) {
-        this.nav('p-viewer');
-        let html = `<h3 style="text-align:center;">${name}</h3><div class="grid">`;
-        this.surahs.forEach((s, i) => {
-            html += `<div class="card" onclick="App.playAudio('', '${s}', '${name}', '${img}', ${i}, '${srv}')">${s}</div>`;
-        });
-        document.getElementById('viewer-render').innerHTML = html + "</div>";
-    },
-
-    // المشغل الذكي وإصلاح الروابط
-    playAudio(url, surah, sheikh, img, index, srv) {
-        this.currentTrack = { index, srv, sheikh, img };
-        
-        // بناء الرابط بشكل ديناميكي لضمان عمله (تنسيق 001.mp3)
-        let trackUrl = url;
-        if (!url && srv) {
-            const trackNum = String(index + 1).padStart(3, '0');
-            trackUrl = `${srv}${trackNum}.mp3`;
-        }
-
-        this.audio.src = trackUrl;
-        this.audio.play().catch(() => alert("الرابط غير متاح حالياً"));
-        
-        document.getElementById('player-surah').innerText = surah;
-        document.getElementById('player-sheikh').innerText = sheikh;
-        document.getElementById('player-img').src = img || 'default.png';
-        document.getElementById('audio-player-modal').classList.add('active');
-        document.getElementById('play-pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
-    },
-
-    nextTrack() {
-        if (this.currentTrack.index < 113) {
-            const nextIdx = this.currentTrack.index + 1;
-            this.playAudio('', this.surahs[nextIdx], this.currentTrack.sheikh, this.currentTrack.img, nextIdx, this.currentTrack.srv);
-        }
-    },
-
-    prevTrack() {
-        if (this.currentTrack.index > 0) {
-            const prevIdx = this.currentTrack.index - 1;
-            this.playAudio('', this.surahs[prevIdx], this.currentTrack.sheikh, this.currentTrack.img, prevIdx, this.currentTrack.srv);
-        }
-    },
-
-    toggleAudio() {
-        if(this.audio.paused) { this.audio.play(); document.getElementById('play-pause-btn').innerHTML = '<i class="fas fa-pause"></i>'; }
-        else { this.audio.pause(); document.getElementById('play-pause-btn').innerHTML = '<i class="fas fa-play"></i>'; }
-    },
-
-    updateAudioUI() {
-        if(!this.audio.duration) return;
-        const p = (this.audio.currentTime / this.audio.duration) * 100;
-        document.getElementById('audio-progress').value = p;
-        document.getElementById('current-time').innerText = this.formatTime(this.audio.currentTime);
-        document.getElementById('duration-time').innerText = this.formatTime(this.audio.duration);
-    },
-
-    formatTime(sec) {
-        let m=Math.floor(sec/60), s=Math.floor(sec%60);
-        return `${m}:${s<10?'0'+s:s}`;
-    },
-
-    async installApp() {
-        if (this.deferredPrompt) {
-            this.deferredPrompt.prompt();
-            this.deferredPrompt = null;
-        }
-    },
-
-    nav(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-        document.getElementById(id).classList.add('active-page');
-        document.getElementById('back-nav').style.display = id === 'p-home' ? 'none' : 'block';
-    },
-
-    goBack() { this.nav('p-home'); },
-
-    toggleTheme() {
-        const body = document.body;
-        const isDark = body.getAttribute('data-theme') === 'dark';
-        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.getElementById('theme-icon').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
-    },
-    
-    closeAudioPlayer() { document.getElementById('audio-player-modal').classList.remove('active'); },
-
 
     // --- نظام الوقت والأذان ---
     updateTime() {
